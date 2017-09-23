@@ -27,6 +27,7 @@ public:
 		sudu_out.open(sudu_out_string);
 		sudu_gene_init(first_num);
 		sudu_gene_begin(num, first_num);
+		sudu_to_file_flush();
 		//	sudu_generation_loop(0, num);//第一个数据结构中的数据,起点
 		sudu_out.close();
 
@@ -45,6 +46,8 @@ public:
 			sudu_to_file();
 			sudu_solve_begin();
 		}while (sudu_in.getline(buf, 20));
+		sudu_in.close();
+		sudu_out.close();
 	}
 
 private:
@@ -61,7 +64,8 @@ private:
 	int rand_posi_order[81 * 9];
 	int rand_num_order[9];
 	int x1[9] = {0400,0200,0100,0040,0020,0010,0004,0002,0001};
-
+	char sudubuf[100000];
+	int sudulen = 0;
 
 	void print_arr_rand() {
 		sudu_out << "rand_num_order" << std::endl;
@@ -114,8 +118,7 @@ private:
 		
 		sudu_gene_loop(0, x, num);
 	}
-	void sudu_gene_loop(int order, int & now_num, int target_num) {//int order = (num-1)*10+(depth-1) - -| 
-																   //如果now_num==target_num,不做任何操作 //如果大于，报错
+	void sudu_gene_loop(int order, int & now_num, int target_num) {
 		int canset = 0;
 		int depth = order % 9;
 		int num = rand_num_order[(order - depth) / 9];//ATTENTION 是否可以直接除
@@ -323,20 +326,26 @@ private:
 
 	}
 	void sudu_to_file() {
-		for (int i = 0, j = 0; i < 81; i++) {
-			sudu_out << sudu[i] << ' ';
-		//	std::cout << sudu[i] << ' ';
-			if (j == 8) {
-				j = -1;
-				sudu_out << '\n';
-		//		std::cout << std::endl;
-			}
-			j++;
+		if (sudulen > 99800) {
+			sudubuf[sudulen] = '\0';
+			sudu_out << sudubuf;
+			sudulen = 0;
 		}
-	//	std::cout << "fenhang " << std::endl;
-		sudu_out << '\n';
+		for (int i = 0; i < 9; i++) {
+			for (int j = 0; j < 8; j++) {
+				sudubuf[sudulen++] = sudu[i * 9 + j]+'0';
+				sudubuf[sudulen++] = ' ';
+			}
+			sudubuf[sudulen++] = sudu[i * 9 + 8] + '0';
+			sudubuf[sudulen++] = '\n';
+		}
+		sudubuf[sudulen++] = '\n';
 	}
-
+	void sudu_to_file_flush() {
+		sudubuf[sudulen] = '\0';
+		sudu_out << sudubuf;
+		sudulen = 0;
+	}
 
 	void sudu_solve_begin() {
 		int x = 0;
