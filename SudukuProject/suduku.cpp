@@ -24,26 +24,26 @@ public:
 		sudu_out check if useful, if can write
 		*/
 
-		std::cout << "gene begin" << "\n";
 		sudu_out.open(sudu_out_string);
-
 		sudu_gene_init(first_num);
-		print_arr_rand();
 		sudu_gene_begin(num, first_num);
 		//	sudu_generation_loop(0, num);//第一个数据结构中的数据,起点
 		sudu_out.close();
 
-		std::cout << "gene end" << "\n";
 
 	}
 
-	void sudu_solve(std::ofstream sudo_in) {
+	void sudu_solve(char sudu_in_string[]) {
+		sudu_in.open(sudu_in_string);
+		sudu_out.open("suduout.txt");
 		//	sudu_solve_init(sudo_in);
 		sudu_solve_begin(1, 1);//num 文件中的待解数独局的数目，xx 文件数据局保存位置
 	}
 
 private:
 	std::ofstream sudu_out;
+	std::ofstream sudu_in;
+
 	int gene_row[9] = { 0 };
 	int gene_hasput[9] = { 0 };
 	int gene_33[81] = { 0 };
@@ -77,18 +77,11 @@ private:
 		gene_33[0] = 0377;
 		for (i = 0; i < 81; i++) {
 			sudu_rand(&rand_posi_order[i * 9], 1, 9);
-			/*for (int z = 0; z < 9; z++) {
-				sudu_out << rand_posi_order[i * 9 + z]<<" ";
-			}
-			sudu_out << "\n";*/
 		}
 		sudu_rand(rand_num_order, 0, 8);
 		for (i = 0; rand_num_order[i] != first_num-1; i++);
 		rand_num_order[i] = rand_num_order[0];
 		rand_num_order[0] = first_num-1;
-		for (int z = 0; z < 9; z++) {
-			sudu_out << "randnum"<< rand_num_order[z] << " ";
-		}
 	}
 
 	void sudu_rand(int arr[], int begin, int end) {
@@ -107,15 +100,12 @@ private:
 		c = a;
 		a = b;
 		b = c;
-		//sudu_out << "a: " << a << " b:" << b << "\n";
 	}
 
 	void sudu_gene_begin(int num, int first_num) {
 		int x = 0;
-		std::cout << "gene begin begin" << "\n";
 		
 		sudu_gene_loop(0, x, num);
-		std::cout << "gene begin end" << "\n";
 	}
 	void sudu_gene_loop(int order, int & now_num, int target_num) {//int order = (num-1)*10+(depth-1) - -| 
 																   //如果now_num==target_num,不做任何操作 //如果大于，报错
@@ -133,8 +123,6 @@ private:
 			if (!(canset & x1[i-1])) {
 				sudu[depth * 9 + i - 1] = num + 1;//放入数据表
 												  //sudu_to_file();
-
-				sudu_to_file();
 				if (order == 80) {
 					check();//检查
 					sudu_to_file();
@@ -342,10 +330,7 @@ private:
 		std::cout << "fenhang " << std::endl;
 
 	}
-	char* sudu_to_string() {	//输入数独表，返回该数独表的字符串格式
-		char * x;
-		return x;
-	}
+
 	void sudu_solve_init(std::ofstream sudu_in) {
 		//读入文件，保存数据到某位置
 	}
