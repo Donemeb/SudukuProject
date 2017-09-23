@@ -60,18 +60,12 @@ private:
 	void sudu_gene_loop(int order, int * now_num, int target_num) {//int order = (num-1)*10+(depth-1) 
 																   //如果now_num==target_num,不做任何操作 //如果大于，报错
 		int canset = 0;
-		int depth = order % 10;
-		int num = (order - depth) / 10;//ATTENTION 是否可以直接除
+		int depth = order % 9;
+		int num = (order - depth) / 9;//ATTENTION 是否可以直接除
 		int x1 = 0400;
 		//		sudu_out << "loop ! 2: " << order << " " << num << " " << depth << " " << *now_num << " " << target_num << "\n";
 		if (*now_num == target_num) return;
-
-		/*
-		·如果该struct的可用数据表到最末了：包括为空
-		第一个数据->提示所有情况遍历，结束
-		else
-		sudo_generation_loop(上一个数据)
-		*/
+		//sudu_to_file();
 		canset = gene_row[num] | gene_hasput[depth] | gene_33[order];
 		for (int i = 1; i<10; i++) {
 
@@ -81,6 +75,7 @@ private:
 				if (order == 80) {
 					check();//检查
 					sudu_to_file();
+					sudu[depth * 9 + i - 1] = 0;
 					//输出到文件 //ATTENTION 考虑缓存、效率 
 				}
 				//更新冲突表 
@@ -89,77 +84,77 @@ private:
 				gene_hasput[depth] = gene_hasput[depth] | x1;
 
 				if (depth == 0) {
-					if (0<i <= 3) {
+					if (i<= 3) {
 						gene_33[num * 9 + 1] |= 0700;
 						gene_33[num * 9 + 2] |= 0700;
 					}
-					else if (3<i <= 6) {
+					else if (i <= 6) {
 						gene_33[num * 9 + 1] |= 0070;
 						gene_33[num * 9 + 2] |= 0070;
 					}
-					else if (6<i <= 9) {
+					else if (i <= 9) {
 						gene_33[num * 9 + 1] |= 0007;
 						gene_33[num * 9 + 2] |= 0007;
 					}
 				}
 				else if (depth == 1) {
-					if (0<i <= 3) {
+					if (i <= 3) {
 						gene_33[num * 9 + 2] |= 0700;
 					}
-					else if (3<i <= 6) {
+					else if (i <= 6) {
 						gene_33[num * 9 + 2] |= 0070;
 					}
-					else if (6<i <= 9) {
+					else if (i <= 9) {
 						gene_33[num * 9 + 2] |= 0007;
 					}
 				}
 				else if (depth == 3) {
-					if (0<i <= 3) {
+					if (i <= 3) {
 						gene_33[num * 9 + 4] |= 0700;
 						gene_33[num * 9 + 5] |= 0700;
 					}
-					else if (3<i <= 6) {
+					else if (i <= 6) {
 						gene_33[num * 9 + 4] |= 0070;
 						gene_33[num * 9 + 5] |= 0070;
 					}
-					else if (6<i <= 9) {
+					else if (i <= 9) {
 						gene_33[num * 9 + 4] |= 0007;
 						gene_33[num * 9 + 5] |= 0007;
 					}
 				}
 				else if (depth == 4) {
-					if (0<i <= 3) {
+					if (i <= 3) {
 						gene_33[num * 9 + 5] |= 0700;
 					}
-					else if (3<i <= 6) {
+					else if (i <= 6) {
 						gene_33[num * 9 + 5] |= 0070;
 					}
-					else if (6<i <= 9) {
+					else if (i <= 9) {
 						gene_33[num * 9 + 5] |= 0007;
 					}
 				}
 				else if (depth == 6) {
-					if (0<i <= 3) {
+					if (i <= 3) {
 						gene_33[num * 9 + 7] |= 0700;
 						gene_33[num * 9 + 8] |= 0700;
 					}
-					else if (3<i <= 6) {
+					else if (i <= 6) {
 						gene_33[num * 9 + 7] |= 0070;
 						gene_33[num * 9 + 8] |= 0070;
 					}
-					else if (6<i <= 9) {
+					else if (i <= 9) {
 						gene_33[num * 9 + 7] |= 0007;
 						gene_33[num * 9 + 8] |= 0007;
 					}
 				}
 				else if (depth == 7) {
-					if (0<i <= 3) {
+					if (i <= 3) {
 						gene_33[num * 9 + 8] |= 0700;
 					}
-					else if (3<i <= 6) {
+					else if (i <= 6) {
 						gene_33[num * 9 + 8] |= 0070;
 					}
-					else if (6<i <= 9) {
+					else if (i <= 9) {
 						gene_33[num * 9 + 8] |= 0007;
 					}
 				}
@@ -168,82 +163,82 @@ private:
 				if (*now_num == target_num) return;
 
 				//ATTENTION 是否考虑回退模式？栈存储？ 而不是再计算一遍 
-				sudu[(depth - 1) * 9 + i - 1] = 0;//放入数据表
+				sudu[depth * 9 + i - 1] = 0;//放入数据表
 												  //更新冲突表 
 				gene_row[num] = gene_row[num] & (~x1);
 				gene_hasput[depth] = gene_hasput[depth] & (~x1);
 				if (depth == 0) {
-					if (0<i <= 3) {
+					if (i <= 3) {
 						gene_33[num * 9 + 1] &= 0077;
 						gene_33[num * 9 + 2] &= 0077;
 					}
-					else if (3<i <= 6) {
+					else if (i <= 6) {
 						gene_33[num * 9 + 1] &= 0707;
 						gene_33[num * 9 + 2] &= 0707;
 					}
-					else if (6<i <= 9) {
+					else if (i <= 9) {
 						gene_33[num * 9 + 1] &= 0770;
 						gene_33[num * 9 + 2] &= 0770;
 					}
 				}
 				else if (depth == 1) {
-					if (0<i <= 3) {
+					if (i <= 3) {
 						gene_33[num * 9 + 2] &= 0077;
 					}
-					else if (3<i <= 6) {
+					else if (i <= 6) {
 						gene_33[num * 9 + 2] &= 0707;
 					}
-					else if (6<i <= 9) {
+					else if (i <= 9) {
 						gene_33[num * 9 + 2] &= 0770;
 					}
 				}
 				else if (depth == 3) {
-					if (0<i <= 3) {
+					if (i <= 3) {
 						gene_33[num * 9 + 4] &= 0077;
 						gene_33[num * 9 + 5] &= 0077;
 					}
-					else if (3<i <= 6) {
+					else if (i <= 6) {
 						gene_33[num * 9 + 4] &= 0707;
 						gene_33[num * 9 + 5] &= 0707;
 					}
-					else if (6<i <= 9) {
+					else if (i <= 9) {
 						gene_33[num * 9 + 4] &= 0770;
 						gene_33[num * 9 + 5] &= 0770;
 					}
 				}
 				else if (depth == 4) {
-					if (0<i <= 3) {
+					if (i <= 3) {
 						gene_33[num * 9 + 5] &= 0077;
 					}
-					else if (3<i <= 6) {
+					else if (i <= 6) {
 						gene_33[num * 9 + 5] &= 0707;
 					}
-					else if (6<i <= 9) {
+					else if (i <= 9) {
 						gene_33[num * 9 + 5] &= 0770;
 					}
 				}
 				else if (depth == 6) {
-					if (0<i <= 3) {
+					if (i <= 3) {
 						gene_33[num * 9 + 7] &= 0077;
 						gene_33[num * 9 + 8] &= 0077;
 					}
-					else if (3<i <= 6) {
+					else if (i <= 6) {
 						gene_33[num * 9 + 7] &= 0707;
 						gene_33[num * 9 + 8] &= 0707;
 					}
-					else if (6<i <= 9) {
+					else if (i <= 9) {
 						gene_33[num * 9 + 7] &= 0770;
 						gene_33[num * 9 + 8] &= 0770;
 					}
 				}
 				else if (depth == 7) {
-					if (0<i <= 3) {
+					if (i <= 3) {
 						gene_33[num * 9 + 8] &= 0077;
 					}
-					else if (3<i <= 6) {
+					else if (i <= 6) {
 						gene_33[num * 9 + 8] &= 0707;
 					}
-					else if (6<i <= 9) {
+					else if (i <= 9) {
 						gene_33[num * 9 + 8] &= 0770;
 					}
 				}
