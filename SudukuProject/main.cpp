@@ -12,6 +12,6 @@ int main(int argc, char *argv[]) {
 	std::cout << "argc:" << argc << " --not do";
 	}*/
 	suduku sudu;
-//	sudu.sudu_generation(20, 5, "suduku.txt");
-	sudu.sudu_solve("sudup.txt");
+	sudu.sudu_generation(1000000, 5, "suduku.txt");
+//	sudu.sudu_solve("sudup.txt");
 }

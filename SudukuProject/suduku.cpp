@@ -33,16 +33,23 @@ public:
 
 	}
 
-	void sudu_solve(char sudu_in_string[]) {
+	void sudu_solve(char sudu_in_string[]) {	//	错误处理..
+		char buf[20];
 		sudu_in.open(sudu_in_string);
 		sudu_out.open("suduout.txt");
-		//	sudu_solve_init(sudo_in);
-		sudu_solve_begin(1, 1);//num 文件中的待解数独局的数目，xx 文件数据局保存位置
+		do {
+			for (int i = 0; i < 9; i++) {
+				sudu_in.getline(buf, 20);
+				sscanf_s(buf, "%d %d %d %d %d %d %d %d %d", &sudu[i*9],&sudu[i*9+1], &sudu[i*9 + 2], &sudu[i*9 + 3], &sudu[i*9 + 4], &sudu[i*9 + 5], &sudu[i*9 + 6], &sudu[i*9 + 7], &sudu[i*9 + 8]);
+			}
+			sudu_to_file();
+			sudu_solve_begin();
+		}while (sudu_in.getline(buf, 20));
 	}
 
 private:
 	std::ofstream sudu_out;
-	std::ofstream sudu_in;
+	std::ifstream sudu_in;
 
 	int gene_row[9] = { 0 };
 	int gene_hasput[9] = { 0 };
@@ -318,29 +325,24 @@ private:
 	void sudu_to_file() {
 		for (int i = 0, j = 0; i < 81; i++) {
 			sudu_out << sudu[i] << ' ';
-			std::cout << sudu[i] << ' ';
+		//	std::cout << sudu[i] << ' ';
 			if (j == 8) {
 				j = -1;
 				sudu_out << '\n';
-				std::cout << std::endl;
+		//		std::cout << std::endl;
 			}
 			j++;
 		}
+	//	std::cout << "fenhang " << std::endl;
 		sudu_out << '\n';
-		std::cout << "fenhang " << std::endl;
-
 	}
 
-	void sudu_solve_init(std::ofstream sudu_in) {
-		//读入文件，保存数据到某位置
+
+	void sudu_solve_begin() {
+		int x = 0;
+		sudu_solve_loop(0, x);
 	}
-	void sudu_solve_begin(int num, int x) {
-		for (int i = 0; i < num; i++) {
-			sudu_solve_begin_init();//包括将表移到指定位置，填入可填的数字，设置回溯顺序
-			sudu_solve_loop(x);//开始解题
-		}
-	}
-	void sudu_solve_loop(int x) {
+	void sudu_solve_loop(int order, int &num) {
 		//如果该格是最高一格且无可用解，提示无解并退出
 		//如果该格标记为重置，更新可用数据表并设置开始指针
 		//如果该格可用解到最末了，标记，sudo_solve_loop()上一个
@@ -348,6 +350,66 @@ private:
 		·如果该格是最后一格，#check,测试用，输出结果并退出
 		else 标记下一个可用解 sudu_solve_loop 下一个
 		*/
+//		sudu_out << order << " " << num << "\n";
+		if (sudu[order] != 0) {
+			if (order == 80) {
+				sudu_to_file();
+				num = 1;
+				return;
+			}
+			sudu_solve_loop(order + 1, num);
+		}
+		else {
+			for (int i = 1; i < 10; i++) {
+//				sudu_out << "loop order:" << order << " i:" << i << "\n";
+//				sudu_to_file();
+				if (num == 1) return;
+				if (sudu_insert(order, i)) {
+					sudu[order] = i;
+//					sudu_to_file();
+					if (order == 80) {
+						sudu_to_file();
+						num = 1;
+						return;
+					}
+					else {
+						sudu_solve_loop(order + 1, num);
+						sudu[order] = 0;
+					}
+				}
+			}
+		}
+	}
+	int sudu_insert(int posi, int num) {
+		int block, col, row, x, y;
+		x = posi % 9;
+		for (int i = 0; i < 9; i++) {
+			if (sudu[i * 9 + x] == num) {
+				return 0;
+			}
+		}
+		y = (posi - x) / 9;
+		for (int i = 0; i < 9; i++) {
+			if (sudu[y * 9 + i] == num) {
+				return 0;
+			}
+		}
+		block = sudu_block_num(posi);
+		col = block % 3;
+		row = (block - col) / 3;
+		for (int i = col*3; i < col * 3+3; i++) {
+			for (int j = row*3; j < row * 3+3; j++) {
+				if (sudu[j * 9 + i] == num) return 0;
+			}
+		}
+		return 1;
+	}
+	int sudu_block_num(int posi) {
+		int col = posi % 9;
+		int row = (posi - col) / 9;
+		col = (col - col % 3) / 3;
+		row = (row - row % 3) / 3;
+		return row * 3 + col;
 	}
 	void sudu_solve_begin_init() {
 		//包括将表移到指定位置，填入可填的数字，设置回溯顺序
