@@ -54,17 +54,17 @@ private:
 		int x = 0;
 
 		std::cout << "gene begin begin" << "\n";
-		sudu_gene_loop(0, &x, num);
+		sudu_gene_loop(0, x, num);
 		std::cout << "gene begin end" << "\n";
 	}
-	void sudu_gene_loop(int order, int * now_num, int target_num) {//int order = (num-1)*10+(depth-1) 
+	void sudu_gene_loop(int order, int & now_num, int target_num) {//int order = (num-1)*10+(depth-1) - -| 
 																   //如果now_num==target_num,不做任何操作 //如果大于，报错
 		int canset = 0;
 		int depth = order % 9;
 		int num = (order - depth) / 9;//ATTENTION 是否可以直接除
 		int x1 = 0400;
 		//		sudu_out << "loop ! 2: " << order << " " << num << " " << depth << " " << *now_num << " " << target_num << "\n";
-		if (*now_num == target_num) return;
+		if (now_num == target_num) return;
 		//sudu_to_file();
 		canset = gene_row[num] | gene_hasput[depth] | gene_33[order];
 		for (int i = 1; i<10; i++) {
@@ -76,6 +76,8 @@ private:
 					check();//检查
 					sudu_to_file();
 					sudu[depth * 9 + i - 1] = 0;
+					now_num++;
+					//	sudu_out << now_num;
 					//输出到文件 //ATTENTION 考虑缓存、效率 
 				}
 				//更新冲突表 
@@ -160,7 +162,7 @@ private:
 				}
 				sudu_gene_loop(order + 1, now_num, target_num);
 
-				if (*now_num == target_num) return;
+				if (now_num == target_num) return;
 
 				//ATTENTION 是否考虑回退模式？栈存储？ 而不是再计算一遍 
 				sudu[depth * 9 + i - 1] = 0;//放入数据表
