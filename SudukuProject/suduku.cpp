@@ -100,10 +100,10 @@ private:
 		for (int i = end; i >= begin; i--, x++) {
 			arr[x] = i;
 		}
-		for (int i = 0; i < x; i++) {
+	/*	for (int i = 0; i < x; i++) {
 			k = rand() % x;
 			swap(arr[i], arr[k]);
-		}
+		}*/
 	}
 
 	void swap(int & a, int & b) {
@@ -138,6 +138,7 @@ private:
 					sudu_to_file();
 					sudu[depth * 9 + i - 1] = 0;
 					now_num++;
+					return;
 					//	sudu_out << now_num;
 					//输出到文件 //ATTENTION 考虑缓存、效率 
 				}
