@@ -25,27 +25,37 @@ public:
 		*/
 
 		sudu_out.open(sudu_out_string);
+
+		sudu_out << "can i write?1";
 		sudu_gene_init(first_num);
 		sudu_gene_begin(num, first_num);
-		sudu_to_file_flush();
 		//	sudu_generation_loop(0, num);//第一个数据结构中的数据,起点
+		sudu_to_file_flush();
 		sudu_out.close();
-
 
 	}
 
 	void sudu_solve(char sudu_in_string[]) {	//	错误处理..
 		char buf[20];
+		bool ef = true;
 		sudu_in.open(sudu_in_string);
 		sudu_out.open("suduout.txt");
 		do {
 			for (int i = 0; i < 9; i++) {
-				sudu_in.getline(buf, 20);
-				sscanf_s(buf, "%d %d %d %d %d %d %d %d %d", &sudu[i*9],&sudu[i*9+1], &sudu[i*9 + 2], &sudu[i*9 + 3], &sudu[i*9 + 4], &sudu[i*9 + 5], &sudu[i*9 + 6], &sudu[i*9 + 7], &sudu[i*9 + 8]);
+				if (sudu_in.getline(buf, 20)) {
+					sscanf_s(buf, "%d %d %d %d %d %d %d %d %d", &sudu[i * 9], &sudu[i * 9 + 1], &sudu[i * 9 + 2], &sudu[i * 9 + 3], &sudu[i * 9 + 4], &sudu[i * 9 + 5], &sudu[i * 9 + 6], &sudu[i * 9 + 7], &sudu[i * 9 + 8]);
+				}
+				else {
+					ef = false;
+				}
 			}
-			sudu_to_file();
+			//	sudu_to_file();
+			if (!ef) {
+				break;
+			}
 			sudu_solve_begin();
-		}while (sudu_in.getline(buf, 20));
+		} while (sudu_in.getline(buf, 20));
+		sudu_to_file_flush();
 		sudu_in.close();
 		sudu_out.close();
 	}
@@ -63,7 +73,7 @@ private:
 							}*/
 	int rand_posi_order[81 * 9];
 	int rand_num_order[9];
-	int x1[9] = {0400,0200,0100,0040,0020,0010,0004,0002,0001};
+	int x1[9] = { 0400,0200,0100,0040,0020,0010,0004,0002,0001 };
 	char sudubuf[100000];
 	int sudulen = 0;
 
@@ -76,7 +86,7 @@ private:
 		sudu_out << "rand_posi_order" << std::endl;
 		for (int i = 0; i < 81; i++) {
 			for (int j = 0; j < 9; j++) {
-				sudu_out << rand_posi_order[i*9+j] << " ";
+				sudu_out << rand_posi_order[i * 9 + j] << " ";
 			}
 			sudu_out << std::endl;
 		}
@@ -85,25 +95,24 @@ private:
 	void sudu_gene_init(int first_num) {
 		int i = 0;
 		srand(clock());
-		gene_33[0] = 0377;
 		for (i = 0; i < 81; i++) {
-			sudu_rand(&rand_posi_order[i * 9], 1, 9);
+			sudu_rand(&rand_posi_order[i * 9], 0, 8);
 		}
 		sudu_rand(rand_num_order, 0, 8);
-		for (i = 0; rand_num_order[i] != first_num-1; i++);
+		for (i = 0; rand_num_order[i] != first_num - 1; i++);
 		rand_num_order[i] = rand_num_order[0];
-		rand_num_order[0] = first_num-1;
+		rand_num_order[0] = first_num - 1;
 	}
 
 	void sudu_rand(int arr[], int begin, int end) {
-		int x = 0,k;
+		int x = 0, k;
 		for (int i = end; i >= begin; i--, x++) {
 			arr[x] = i;
 		}
-	/*	for (int i = 0; i < x; i++) {
+		for (int i = 0; i < x; i++) {
 			k = rand() % x;
 			swap(arr[i], arr[k]);
-		}*/
+		}
 	}
 
 	void swap(int & a, int & b) {
@@ -115,199 +124,50 @@ private:
 
 	void sudu_gene_begin(int num, int first_num) {
 		int x = 0;
-		
+
 		sudu_gene_loop(0, x, num);
 	}
 	void sudu_gene_loop(int order, int & now_num, int target_num) {
 		int canset = 0;
 		int depth = order % 9;
-		int num = rand_num_order[(order - depth) / 9];//ATTENTION 是否可以直接除
-		int order_num = (order - depth) / 9;
+		int order_num = order / 9;
+		int num = rand_num_order[order_num];//ATTENTION 是否可以直接除
 		int i;
 		//		sudu_out << "loop ! 2: " << order << " " << num << " " << depth << " " << *now_num << " " << target_num << "\n";
-		if (now_num == target_num) return;
-		//sudu_to_file();
-		canset = gene_row[num] | gene_hasput[depth] | gene_33[order];
-		for (int i1 = 1; i1<10; i1++) {
-			i = rand_posi_order[order * 9 + i1 - 1];
-			if (!(canset & x1[i-1])) {
-				sudu[depth * 9 + i - 1] = num + 1;//放入数据表
-												  //sudu_to_file();
-				if (order == 80) {
-					check();//检查
-					sudu_to_file();
-					sudu[depth * 9 + i - 1] = 0;
-					now_num++;
-					return;
-					//	sudu_out << now_num;
-					//输出到文件 //ATTENTION 考虑缓存、效率 
-				}
-				//更新冲突表 
-				gene_row[num] = gene_row[num] | x1[i - 1];
+		if (order == 0) {
+			sudu[0] = num + 1;
+			gene_row[num] = gene_row[num] | 0400;
+			gene_hasput[depth] = gene_hasput[depth] | 0400;
+			gene_33[0] = 0700;
+			sudu_gene_loop(order + 1, now_num, target_num);
+		}
+		else {
+			if (now_num == target_num) return;
+			//	sudu_to_file();
+			canset = gene_row[num] | gene_hasput[depth] | gene_33[order_num * 9 + depth / 3];
+			for (int i1 = 1; i1 < 10; i1++) {
+				i = rand_posi_order[order * 9 + i1 - 1];	//change the name of i
+				if (!(canset & x1[i])) {
+					//放入数据表
+					//sudu_to_file();
+					if (order == 80) {
+						sudu[depth * 9 + i] = num + 1;
+						sudu_to_file();
+						sudu[depth * 9 + i] = 0;
+						now_num++;
+						return;
+						//	sudu_out << now_num;
+						//输出到文件 //ATTENTION 考虑缓存、效率 
+					}
+					//更新冲突表 
+					sudu_insert_0(i, num, depth, order_num);
 
-				gene_hasput[depth] = gene_hasput[depth] | x1[i - 1];
+					sudu_gene_loop(order + 1, now_num, target_num);
 
-				if (depth == 0) {
-					if (i <= 3) {
-						gene_33[order_num * 9 + 1] |= 0700;
-						gene_33[order_num * 9 + 2] |= 0700;
-					}
-					else if (i <= 6) {
-						gene_33[order_num * 9 + 1] |= 0070;
-						gene_33[order_num * 9 + 2] |= 0070;
-					}
-					else if (i <= 9) {
-						gene_33[order_num * 9 + 1] |= 0007;
-						gene_33[order_num * 9 + 2] |= 0007;
-					}
-				}
-				else if (depth == 1) {
-					if (i <= 3) {
-						gene_33[order_num * 9 + 2] |= 0700;
-					}
-					else if (i <= 6) {
-						gene_33[order_num * 9 + 2] |= 0070;
-					}
-					else if (i <= 9) {
-						gene_33[order_num * 9 + 2] |= 0007;
-					}
-				}
-				else if (depth == 3) {
-					if (i <= 3) {
-						gene_33[order_num * 9 + 4] |= 0700;
-						gene_33[order_num * 9 + 5] |= 0700;
-					}
-					else if (i <= 6) {
-						gene_33[order_num * 9 + 4] |= 0070;
-						gene_33[order_num * 9 + 5] |= 0070;
-					}
-					else if (i <= 9) {
-						gene_33[order_num * 9 + 4] |= 0007;
-						gene_33[order_num * 9 + 5] |= 0007;
-					}
-				}
-				else if (depth == 4) {
-					if (i <= 3) {
-						gene_33[order_num * 9 + 5] |= 0700;
-					}
-					else if (i <= 6) {
-						gene_33[order_num * 9 + 5] |= 0070;
-					}
-					else if (i <= 9) {
-						gene_33[order_num * 9 + 5] |= 0007;
-					}
-				}
-				else if (depth == 6) {
-					if (i <= 3) {
-						gene_33[order_num * 9 + 7] |= 0700;
-						gene_33[order_num * 9 + 8] |= 0700;
-					}
-					else if (i <= 6) {
-						gene_33[order_num * 9 + 7] |= 0070;
-						gene_33[order_num * 9 + 8] |= 0070;
-					}
-					else if (i <= 9) {
-						gene_33[order_num * 9 + 7] |= 0007;
-						gene_33[order_num * 9 + 8] |= 0007;
-					}
-				}
-				else if (depth == 7) {
-					if (i <= 3) {
-						gene_33[order_num * 9 + 8] |= 0700;
-					}
-					else if (i <= 6) {
-						gene_33[order_num * 9 + 8] |= 0070;
-					}
-					else if (i <= 9) {
-						gene_33[order_num * 9 + 8] |= 0007;
-					}
-				}
-				sudu_gene_loop(order + 1, now_num, target_num);
+					if (now_num == target_num) return;
 
-				if (now_num == target_num) return;
-
-				//ATTENTION 是否考虑回退模式？栈存储？ 而不是再计算一遍 
-				sudu[depth * 9 + i - 1] = 0;//放入数据表
-												  //更新冲突表 
-				gene_row[num] = gene_row[num] & (~x1[i - 1]);
-				gene_hasput[depth] = gene_hasput[depth] & (~x1[i - 1]);
-				if (depth == 0) {
-					if (i <= 3) {
-						gene_33[order_num * 9 + 1] &= 0077;
-						gene_33[order_num * 9 + 2] &= 0077;
-					}
-					else if (i <= 6) {
-						gene_33[order_num * 9 + 1] &= 0707;
-						gene_33[order_num * 9 + 2] &= 0707;
-					}
-					else if (i <= 9) {
-						gene_33[order_num * 9 + 1] &= 0770;
-						gene_33[order_num * 9 + 2] &= 0770;
-					}
+					sudu_delete_0(i, num, depth, order_num);
 				}
-				else if (depth == 1) {
-					if (i <= 3) {
-						gene_33[order_num * 9 + 2] &= 0077;
-					}
-					else if (i <= 6) {
-						gene_33[order_num * 9 + 2] &= 0707;
-					}
-					else if (i <= 9) {
-						gene_33[order_num * 9 + 2] &= 0770;
-					}
-				}
-				else if (depth == 3) {
-					if (i <= 3) {
-						gene_33[order_num * 9 + 4] &= 0077;
-						gene_33[order_num * 9 + 5] &= 0077;
-					}
-					else if (i <= 6) {
-						gene_33[order_num * 9 + 4] &= 0707;
-						gene_33[order_num * 9 + 5] &= 0707;
-					}
-					else if (i <= 9) {
-						gene_33[order_num * 9 + 4] &= 0770;
-						gene_33[order_num * 9 + 5] &= 0770;
-					}
-				}
-				else if (depth == 4) {
-					if (i <= 3) {
-						gene_33[order_num * 9 + 5] &= 0077;
-					}
-					else if (i <= 6) {
-						gene_33[order_num * 9 + 5] &= 0707;
-					}
-					else if (i <= 9) {
-						gene_33[order_num * 9 + 5] &= 0770;
-					}
-				}
-				else if (depth == 6) {
-					if (i <= 3) {
-						gene_33[order_num * 9 + 7] &= 0077;
-						gene_33[order_num * 9 + 8] &= 0077;
-					}
-					else if (i <= 6) {
-						gene_33[order_num * 9 + 7] &= 0707;
-						gene_33[order_num * 9 + 8] &= 0707;
-					}
-					else if (i <= 9) {
-						gene_33[order_num * 9 + 7] &= 0770;
-						gene_33[order_num * 9 + 8] &= 0770;
-					}
-				}
-				else if (depth == 7) {
-					if (i <= 3) {
-						gene_33[order_num * 9 + 8] &= 0077;
-					}
-					else if (i <= 6) {
-						gene_33[order_num * 9 + 8] &= 0707;
-					}
-					else if (i <= 9) {
-						gene_33[order_num * 9 + 8] &= 0770;
-					}
-				}
-				sudu[depth * 9 + i - 1] = 0; //后期可删 
-
 			}
 		}
 
@@ -326,6 +186,88 @@ private:
 		*/
 
 	}
+	void sudu_delete_0(int i, int num, int depth, int order_num) {
+		//ATTENTION 是否考虑回退模式？栈存储？ 而不是再计算一遍 
+		sudu[depth * 9 + i] = 0;//放入数据表
+								//更新冲突表 
+		gene_row[num] = gene_row[num] & (~x1[i]);
+		gene_hasput[depth] = gene_hasput[depth] & (~x1[i]);
+		if (depth < 3) {
+			if (i <= 2) {
+				gene_33[order_num * 9 + 0] &= 0077;
+			}
+			else if (i <= 5) {
+				gene_33[order_num * 9 + 0] &= 0707;
+			}
+			else if (i <= 8) {
+				gene_33[order_num * 9 + 0] &= 0770;
+			}
+		}
+		else if (depth < 6) {
+			if (i <= 2) {
+				gene_33[order_num * 9 + 1] &= 0077;
+			}
+			else if (i <= 5) {
+				gene_33[order_num * 9 + 1] &= 0707;
+			}
+			else if (i <= 8) {
+				gene_33[order_num * 9 + 1] &= 0770;
+			}
+		}
+
+		else if (depth < 9) {
+			if (i <= 2) {
+				gene_33[order_num * 9 + 2] &= 0077;
+			}
+			else if (i <= 5) {
+				gene_33[order_num * 9 + 2] &= 0707;
+			}
+			else if (i <= 8) {
+				gene_33[order_num * 9 + 2] &= 0770;
+			}
+		}
+
+		//	sudu[depth * 9 + i] = 0; //后期可删 
+	}
+
+	void sudu_insert_0(int i, int num, int depth, int order_num) {
+		sudu[depth * 9 + i] = num + 1;
+		gene_row[num] = gene_row[num] | x1[i];
+		gene_hasput[depth] = gene_hasput[depth] | x1[i];
+		if (depth < 3) {
+			if (i <= 2) {
+				gene_33[order_num * 9 + 0] |= 0700;
+			}
+			else if (i <= 5) {
+				gene_33[order_num * 9 + 0] |= 0070;
+			}
+			else if (i <= 8) {
+				gene_33[order_num * 9 + 0] |= 0007;
+			}
+		}
+		else if (depth < 6) {
+			if (i <= 2) {
+				gene_33[order_num * 9 + 1] |= 0700;
+			}
+			else if (i <= 5) {
+				gene_33[order_num * 9 + 1] |= 0070;
+			}
+			else if (i <= 8) {
+				gene_33[order_num * 9 + 1] |= 0007;
+			}
+		}
+		else if (depth < 8) {
+			if (i <= 2) {
+				gene_33[order_num * 9 + 2] |= 0700;
+			}
+			else if (i <= 5) {
+				gene_33[order_num * 9 + 2] |= 0070;
+			}
+			else if (i <= 8) {
+				gene_33[order_num * 9 + 2] |= 0007;
+			}
+		}
+	}
 	void sudu_to_file() {
 		if (sudulen > 99800) {
 			sudubuf[sudulen] = '\0';
@@ -334,7 +276,7 @@ private:
 		}
 		for (int i = 0; i < 9; i++) {
 			for (int j = 0; j < 8; j++) {
-				sudubuf[sudulen++] = sudu[i * 9 + j]+'0';
+				sudubuf[sudulen++] = sudu[i * 9 + j] + '0';
 				sudubuf[sudulen++] = ' ';
 			}
 			sudubuf[sudulen++] = sudu[i * 9 + 8] + '0';
@@ -360,7 +302,7 @@ private:
 		·如果该格是最后一格，#check,测试用，输出结果并退出
 		else 标记下一个可用解 sudu_solve_loop 下一个
 		*/
-//		sudu_out << order << " " << num << "\n";
+		//		sudu_out << order << " " << num << "\n";
 		if (sudu[order] != 0) {
 			if (order == 80) {
 				sudu_to_file();
@@ -371,12 +313,12 @@ private:
 		}
 		else {
 			for (int i = 1; i < 10; i++) {
-//				sudu_out << "loop order:" << order << " i:" << i << "\n";
-//				sudu_to_file();
+				//				sudu_out << "loop order:" << order << " i:" << i << "\n";
+				//				sudu_to_file();
 				if (num == 1) return;
 				if (sudu_insert(order, i)) {
 					sudu[order] = i;
-//					sudu_to_file();
+					//					sudu_to_file();
 					if (order == 80) {
 						sudu_to_file();
 						num = 1;
@@ -407,8 +349,8 @@ private:
 		block = sudu_block_num(posi);
 		col = block % 3;
 		row = (block - col) / 3;
-		for (int i = col*3; i < col * 3+3; i++) {
-			for (int j = row*3; j < row * 3+3; j++) {
+		for (int i = col * 3; i < col * 3 + 3; i++) {
+			for (int j = row * 3; j < row * 3 + 3; j++) {
 				if (sudu[j * 9 + i] == num) return 0;
 			}
 		}
