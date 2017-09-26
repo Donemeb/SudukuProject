@@ -1,6 +1,6 @@
 #include <iostream>
 #include <string>
-#include "suduku.cpp"
+#include "suduku.h"
 
 int strtoInt(char str[]);
 int main(int argc, char *argv[]) {
@@ -15,7 +15,18 @@ int main(int argc, char *argv[]) {
 	std::cout << "argc:" << argc << " --not do";
 	}*/
 	int num;
+	suduku sudu;
+	sudu.sudu_solve("sudup.txt");
+/*	sudu.sudu_generation(1000, 1, "suduku.txt");
+	std::cout << "check: "<<sudu.check()<<std::endl;
 
+	std::cout << "check: " << strtoInt("a12") << std::endl;
+	std::cout << "check: " << strtoInt("1002") << std::endl;*/
+//	suduku sudu;
+//	sudu.sudu_generation(1000000, 5, "suduku.txt");
+//	sudu.sudu_solve("sudup.txt");
+//	sudu.sudu_solve("a");
+//	int x =sudu.check();
 	if (argc != 3) {
 		std::cout << "input error: should be -c positive int or -s filename" << std::endl;
 		return 0;

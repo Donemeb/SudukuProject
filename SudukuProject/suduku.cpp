@@ -2,22 +2,21 @@
 #include <iostream>
 #include <time.h>
 
-struct sudu_num {
-	int num = 0;
-	int flush = 0;
-	int order[10] = { 1,2,3,4,5,6,7,8,9,0 };
-	int *now = order;
-};
-
-struct sudo_grid {
-	int position = -1;
-	int flush = 0;
-	int order[10] = { 1,2,3,4,5,6,7,8,9,0 };
-	int *now = order;
-
-};
 class suduku {
 public:
+	int check() {
+		int x;
+		for (int i = 0; i < 81; i++) {
+			x = sudu[i];
+			sudu[i] = 0;
+			if (!sudu_insert(i, x)) {
+				return 0;
+			}
+			sudu[i] = x;
+		}
+		return 1;
+	}
+
 	void sudu_generation(int num, int first_num, char sudu_out_string[]) {
 		/*
 		num between 0-int-1, first_num between 1-9
@@ -25,8 +24,9 @@ public:
 		*/
 
 		sudu_out.open(sudu_out_string);
-
-		sudu_out << "can i write?1";
+		if (!sudu_out.is_open()) {
+			std::cout << "ERROR: file can not open" << std::endl;
+		}
 		sudu_gene_init(first_num);
 		sudu_gene_begin(num, first_num);
 		//	sudu_generation_loop(0, num);//第一个数据结构中的数据,起点
@@ -39,7 +39,10 @@ public:
 		char buf[20];
 		bool ef = true;
 		sudu_in.open(sudu_in_string);
-		sudu_out.open("suduout.txt");
+		sudu_out.open("suduku.txt");
+		if (!sudu_in.is_open() | !sudu_out.is_open()) {
+			std::cout << "ERROR: file can not open" << std::endl;
+		}
 		do {
 			for (int i = 0; i < 9; i++) {
 				if (sudu_in.getline(buf, 20)) {
@@ -53,6 +56,7 @@ public:
 			if (!ef) {
 				break;
 			}
+			sudu_solve_new();
 			sudu_solve_begin();
 		} while (sudu_in.getline(buf, 20));
 		sudu_to_file_flush();
@@ -153,7 +157,7 @@ private:
 					if (order == 80) {
 						sudu[depth * 9 + i] = num + 1;
 						sudu_to_file();
-						sudu[depth * 9 + i] = 0;
+//						sudu[depth * 9 + i] = 0;
 						now_num++;
 						return;
 						//	sudu_out << now_num;
@@ -227,7 +231,7 @@ private:
 			}
 		}
 
-		//	sudu[depth * 9 + i] = 0; //后期可删 
+		sudu[depth * 9 + i] = 0; //后期可删 
 	}
 
 	void sudu_insert_0(int i, int num, int depth, int order_num) {
@@ -292,8 +296,72 @@ private:
 
 	void sudu_solve_begin() {
 		int x = 0;
-		sudu_solve_loop(0, x);
+		sudu_solve_init();
+		sudu_solve_loop0(0, x);
 	}
+	
+	void sudu_solve_new() {
+		for (int i = 0; i < 9; i++) {
+			gene_row[i] = 0;
+		}
+		for (int i = 0; i < 9; i++) {
+			gene_hasput[i] = 0;
+		}
+		for (int i = 0; i < 9; i++) {
+			for (int j = 0; j < 9; j++) {
+				gene_33[i*9+j] = 0;
+			}
+		}
+	}
+
+	void sudu_solve_loop0(int order, int & now_num) {
+		int canset = 0;
+		int depth = order % 9;
+		int order_num = order / 9;
+	//	int num = rand_num_order[order_num];//ATTENTION 是否可以直接除
+		int i;
+		//		sudu_out << "loop ! 2: " << order << " " << num << " " << depth << " " << *now_num << " " << target_num << "\n";
+
+		if (now_num == 1) return;
+		if (!check_line(order)) {	//order_num 是否可插入depth行 0-8
+			if (order == 80) {
+				sudu_to_file();
+				now_num = 1;
+				return;
+			}
+			sudu_solve_loop0(order + 1, now_num);
+		}
+		else {
+			if (now_num == 1) return;
+			//	sudu_to_file();
+			canset = gene_row[order_num] | gene_hasput[depth] | gene_33[order_num * 9 + depth / 3];
+			for (int i1 = 1; i1 < 10; i1++) {
+				i = i1 - 1;	//change the name of i
+				if (!(canset & x1[i])) {
+					//放入数据表
+					if (order == 80) {
+						sudu[depth * 9 + i] = order_num + 1;
+						sudu_to_file();
+						sudu[depth * 9 + i] = 0;
+						now_num ++;
+						return;
+						//	sudu_out << now_num;
+						//输出到文件 //ATTENTION 考虑缓存、效率 
+					}
+					//更新冲突表 
+					sudu_insert_0(i, order_num, depth, order_num);
+
+			//		sudu_to_file();
+					sudu_solve_loop0(order + 1, now_num);
+
+					if (now_num == 1) return;
+
+					sudu_delete_0(i, order_num, depth, order_num);
+				}
+			}
+		}
+	}
+
 	void sudu_solve_loop(int order, int &num) {
 		//如果该格是最高一格且无可用解，提示无解并退出
 		//如果该格标记为重置，更新可用数据表并设置开始指针
@@ -332,6 +400,29 @@ private:
 			}
 		}
 	}
+
+	int sudu_block_num(int posi) {
+		int col = posi % 9;
+		int row = (posi - col) / 9;
+		col = (col - col % 3) / 3;
+		row = (row - row % 3) / 3;
+		return row * 3 + col;
+	}
+	void sudu_solve_init() {
+		for (int i = 0; i < 9; i++) {
+			for (int j = 0; j < 9; j++) {
+				if (sudu[i * 9 + j] != 0) {
+					sudu_insert_0(j, sudu[i * 9 + j] - 1, i, sudu[i * 9 + j] - 1);
+				}
+			}
+		}
+		//包括将表移到指定位置，填入可填的数字，设置回溯顺序
+	}
+	void sudu_solve_fillin() {
+		//对数据的可用数据为1的值直接填入。
+		//考虑多次生成数据并填入直到无法确定
+	}
+	
 	int sudu_insert(int posi, int num) {
 		int block, col, row, x, y;
 		x = posi % 9;
@@ -356,22 +447,17 @@ private:
 		}
 		return 1;
 	}
-	int sudu_block_num(int posi) {
-		int col = posi % 9;
-		int row = (posi - col) / 9;
-		col = (col - col % 3) / 3;
-		row = (row - row % 3) / 3;
-		return row * 3 + col;
-	}
-	void sudu_solve_begin_init() {
-		//包括将表移到指定位置，填入可填的数字，设置回溯顺序
-	}
-	void sudu_solve_fillin() {
-		//对数据的可用数据为1的值直接填入。
-		//考虑多次生成数据并填入直到无法确定
-	}
-	void check() {
-
+	int check_line(int order) {
+		int depth = order % 9;
+		int order_num = order / 9;
+		int canset;
+		int i;
+		for (int i = 0; i < 9; i++) {
+			if (sudu[depth * 9 + i] == order_num + 1) {
+				return 0;
+			}
+		}
+		return 1;
 	}
 
 };
