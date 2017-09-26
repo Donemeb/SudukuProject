@@ -1,0 +1,1 @@
+两个.exe只有求解数独时用的方法不同。sudoku.exe用的是类似生成的算法，sudoku2.exe用的是暴力回溯法。可能是我测试数据不足，在我测试时sudoku2.exe的性能要优于sudoku.exe，故将两份都传上去了。
