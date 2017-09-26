@@ -15,8 +15,8 @@ int main(int argc, char *argv[]) {
 	std::cout << "argc:" << argc << " --not do";
 	}*/
 	int num;
-	suduku sudu;
-	sudu.sudu_solve("sudup.txt");
+/*	suduku sudu;
+	sudu.sudu_solve("sudup.txt");*/
 /*	sudu.sudu_generation(1000, 1, "suduku.txt");
 	std::cout << "check: "<<sudu.check()<<std::endl;
 
@@ -39,7 +39,7 @@ int main(int argc, char *argv[]) {
 				std::cout << "input error: should be -c positive int" << std::endl;
 				return 0;
 			}
-			sudu.sudu_generation(num, 5, "suduku.txt");
+			sudu.sudu_generation(num, 5, "sudoku.txt");
 		}
 		else if (strcmp(argv[1], "-s") == 0) {
 			sudu.sudu_solve(argv[2]);
