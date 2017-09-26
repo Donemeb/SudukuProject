@@ -39,7 +39,7 @@ public:
 		char buf[20];
 		bool ef = true;
 		sudu_in.open(sudu_in_string);
-		sudu_out.open("suduku.txt");
+		sudu_out.open("sudoku.txt");
 		if (!sudu_in.is_open() | !sudu_out.is_open()) {
 			std::cout << "ERROR: file can not open" << std::endl;
 		}
